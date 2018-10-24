@@ -5,6 +5,25 @@
 
 using namespace std;
 
+void findLCS(int i, int j, vector<vector<int>> table) {
+    bool up = false, left = false;
+    if (i != 0 && j != 0) {
+	    if (table.at(j).at(i) == table.at(j-1).at(i) + 1) {
+		    up = true;
+		    findLCS(i, j-1, table);
+	    }
+	    if (table.at(j).at(i) == table.at(j).at(i-1) + 1) {
+		    left = true;
+		    findLCS(i-1, j, table);
+	    }
+	    else if (!up && !left) {
+		    cout << "(" << i-1 << ", " << j-1 << ")" << endl;
+		    findLCS(i-1, j-1, table);
+	    }
+    }
+    
+}
+
 void LCS(vector<char> vec1, vector<char> vec2) {
     vector<int> row;
     row.assign(vec1.size() + 1, 0);
@@ -28,8 +47,16 @@ void LCS(vector<char> vec1, vector<char> vec2) {
 	        table.at(j).at(i) = min(min(table.at(j).at(i-1) + 1, table.at(j-1).at(i) + 1), table.at(j-1).at(i-1) + 2);
 	}
     }
-
+    
+    for (int j = 0; j <= vec2.size(); j++) {
+	    for (int i = 0; i <= vec1.size(); i++) {
+		    cout << table.at(j).at(i) << " ";
+	    }
+	    cout << endl;
+    }
+    
     cout << (vec1.size() + vec2.size() - table.at(vec2.size()).at(vec1.size()))/2 << endl;
+    findLCS(vec1.size(), vec2.size(), table);
 }
 
 
