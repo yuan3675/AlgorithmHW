@@ -1,27 +1,29 @@
 #include <iostream>
+#include <set>
 #include <vector>
 #include <algorithm>
 #include <cstring>
+#include <stdio.h>
 
 using namespace std;
 
-void findLCS(int i, int j, vector<vector<int>> table) {
-    bool up = false, left = false;
-    if (i != 0 && j != 0) {
-	    if (table.at(j).at(i) == table.at(j-1).at(i) + 1) {
-		    up = true;
-		    findLCS(i, j-1, table);
-	    }
-	    if (table.at(j).at(i) == table.at(j).at(i-1) + 1) {
-		    left = true;
-		    findLCS(i-1, j, table);
-	    }
-	    else if (!up && !left) {
-		    cout << "(" << i-1 << ", " << j-1 << ")" << endl;
-		    findLCS(i-1, j-1, table);
+// have bugs, needs to be fixed
+void listAllLCS(int m, int n, vector<char> vec1, vector<char> vec2, vector<char> result, int length) {
+    for (int i = m; i < vec2.size(); i++) {
+	    for (int j = n; j < vec1.size(); j++) {
+		    if (vec1.at(j) == vec2.at(i)) {
+			    result.push_back(vec1.at(j));
+			    if (result.size() == length) {
+				    for (int k = 0; k < length; k++) {
+					    printf("%c", result.at(k));
+				    }
+				    printf("\n");
+				    result.clear();
+			    }
+			    listAllLCS(i+1, j+1, vec1, vec2, result, length);
+		    }
 	    }
     }
-    
 }
 
 void LCS(vector<char> vec1, vector<char> vec2) {
@@ -30,40 +32,31 @@ void LCS(vector<char> vec1, vector<char> vec2) {
     vector<vector<int>> table;
     table.assign(vec2.size() + 1, row);
 
-    for (int i = 0; i <= vec1.size(); i++) {
-	    table.at(0).at(i) = i;
-    }
+    for (int i = 0; i < vec1.size() + 1; i++) table.at(0).at(i) = 0;
+    for (int i = 0; i < vec2.size() + 1; i++) table.at(i).at(0) = 0;
 
-    for (int i = 0; i <= vec2.size(); i++) {
-	    table.at(i).at(0) = i;
-    }
-
-    for (int j = 1; j <= vec2.size(); j++) {
-        for(int i = 1; i <= vec1.size(); i++) {
-	    if (vec1.at(i-1) == vec2.at(j-1)) {
-	        table.at(j).at(i) = min(min(table.at(j).at(i-1) + 1, table.at(j-1).at(i) + 1), table.at(j-1).at(i-1) + 0);
+    for (int i = 0; i < vec2.size(); i++) {
+	    for (int j = 0; j < vec1.size(); j++) {
+		    if (vec1.at(j) == vec2.at(i)) {
+			    table.at(i+1).at(j+1) = table.at(i).at(j) + 1;
+		    }
+		    else {
+			    table.at(i+1).at(j+1) = max(table.at(i).at(j+1), table.at(i+1).at(j));
+		    }
 	    }
-	    else 
-	        table.at(j).at(i) = min(min(table.at(j).at(i-1) + 1, table.at(j-1).at(i) + 1), table.at(j-1).at(i-1) + 2);
-	}
     }
-    
-    for (int j = 0; j <= vec2.size(); j++) {
-	    for (int i = 0; i <= vec1.size(); i++) {
-		    cout << table.at(j).at(i) << " ";
-	    }
-	    cout << endl;
-    }
-    
-    cout << (vec1.size() + vec2.size() - table.at(vec2.size()).at(vec1.size()))/2 << endl;
-    findLCS(vec1.size(), vec2.size(), table);
+    printf("%d\n", table.at(vec2.size()).at(vec1.size()));
+    vector<char> result;
+    listAllLCS(0, 0, vec1, vec2, result, table.at(vec2.size()).at(vec1.size()));
 }
+    
 
 
 int main() {
     char input1[100];
     char input2[100];
-    cin >> input1 >> input2;
+    scanf("%s", input1);
+    scanf("%s", input2);
    
     vector<char> vec1(input1, input1 + strlen(input1)); 
     vector<char> vec2(input2, input2 + strlen(input2)); 
