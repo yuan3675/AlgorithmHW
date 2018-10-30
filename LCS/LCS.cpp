@@ -15,15 +15,19 @@ vector<vector<int>> table;
 vector<string> result;
 int LCS_length;
 
+// find out all LCS
 void listAllLCS(int m, int n, int curLen, vector<char> tmp) {
     if (curLen == LCS_length) {
 	   string s(tmp.begin(), tmp.end());
 	   result.push_back(s);
+	   return;
     }
+    
+    if (m == vec2.size() || n == vec1.size()) return;
 
     for (int i = m; i < vec2.size(); i++) {
 	    for (int j = n; j < vec1.size(); j++) {
-		    if (vec1.at(j) == vec2.at(i) && table.at(i+1).at(j+1) == table.at(i).at(j) + 1) {
+		    if (vec1.at(j) == vec2.at(i) && table.at(i+1).at(j+1) == curLen + 1) {
 			    tmp.at(curLen) = vec1.at(j);
 			    listAllLCS(i+1, j+1, curLen + 1, tmp);
 		    }
@@ -31,6 +35,7 @@ void listAllLCS(int m, int n, int curLen, vector<char> tmp) {
     }
 }
 
+// Construct table, find LCS length
 void LCS() {
     vector<int> row;
     row.assign(vec1.size() + 1, 0);
@@ -65,7 +70,20 @@ int main() {
     vec2.assign(input2, input2 + strlen(input2)); 
     LCS();
     printf("%lu\n", result.size());
-    for(int i = 0; i < result.size(); i++) {
+    
+    // sort in dictionary order
+    for(int i = 0; i < result.size() - 1; i++) {
+	    for (int j = i+1; j < result.size(); j++) {
+		    if (result.at(i) > result.at(j)) {
+			    string tmp = result.at(i);
+			    result.at(i) = result.at(j);
+			    result.at(j) = tmp;
+		    }
+	    }
+    }
+    
+    // print out all LCS
+    for (int i = 0; i < result.size(); i++) {
 	    printf("%s\n", result.at(i).c_str());
     }
     return 0;
