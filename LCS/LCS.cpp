@@ -7,29 +7,33 @@
 
 using namespace std;
 
-// have bugs, needs to be fixed
-void listAllLCS(int m, int n, vector<char> vec1, vector<char> vec2, vector<char> result, int length) {
+char input1[100];
+char input2[100];
+vector<char> vec1;
+vector<char> vec2;
+vector<vector<int>> table;
+vector<string> result;
+int LCS_length;
+
+void listAllLCS(int m, int n, int curLen, vector<char> tmp) {
+    if (curLen == LCS_length) {
+	   string s(tmp.begin(), tmp.end());
+	   result.push_back(s);
+    }
+
     for (int i = m; i < vec2.size(); i++) {
 	    for (int j = n; j < vec1.size(); j++) {
-		    if (vec1.at(j) == vec2.at(i)) {
-			    result.push_back(vec1.at(j));
-			    if (result.size() == length) {
-				    for (int k = 0; k < length; k++) {
-					    printf("%c", result.at(k));
-				    }
-				    printf("\n");
-				    result.clear();
-			    }
-			    listAllLCS(i+1, j+1, vec1, vec2, result, length);
+		    if (vec1.at(j) == vec2.at(i) && table.at(i+1).at(j+1) == table.at(i).at(j) + 1) {
+			    tmp.at(curLen) = vec1.at(j);
+			    listAllLCS(i+1, j+1, curLen + 1, tmp);
 		    }
 	    }
     }
 }
 
-void LCS(vector<char> vec1, vector<char> vec2) {
+void LCS() {
     vector<int> row;
     row.assign(vec1.size() + 1, 0);
-    vector<vector<int>> table;
     table.assign(vec2.size() + 1, row);
 
     for (int i = 0; i < vec1.size() + 1; i++) table.at(0).at(i) = 0;
@@ -45,21 +49,24 @@ void LCS(vector<char> vec1, vector<char> vec2) {
 		    }
 	    }
     }
-    printf("%d\n", table.at(vec2.size()).at(vec1.size()));
-    vector<char> result;
-    listAllLCS(0, 0, vec1, vec2, result, table.at(vec2.size()).at(vec1.size()));
+    LCS_length = table.at(vec2.size()).at(vec1.size());
+    printf("%d ", LCS_length);
+    vector<char> tmp(LCS_length, 'a');
+    listAllLCS(0, 0, 0, tmp);
 }
     
 
 
 int main() {
-    char input1[100];
-    char input2[100];
     scanf("%s", input1);
     scanf("%s", input2);
    
-    vector<char> vec1(input1, input1 + strlen(input1)); 
-    vector<char> vec2(input2, input2 + strlen(input2)); 
-    LCS(vec1, vec2);
+    vec1.assign(input1, input1 + strlen(input1)); 
+    vec2.assign(input2, input2 + strlen(input2)); 
+    LCS();
+    printf("%lu\n", result.size());
+    for(int i = 0; i < result.size(); i++) {
+	    printf("%s\n", result.at(i).c_str());
+    }
     return 0;
 }
