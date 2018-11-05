@@ -84,14 +84,14 @@ void pruneAndSearch(vector<Line> constraints) {
                 double tmp2 = (c1 * a2) - (c2 * a1);
                 double y = tmp2 / tmp1;
                 double x = (c1 - (b1 * y)) / (double)a1;
-	        if (x <= xR && x >= xL) {
+	        if (x < xR && x > xL) {
 		    vector<double> tmp{-1, (double) counter, x};
 		    rx.push_back(tmp);
 		    vector<int> indexTmp{i, index};
 		    rxNeg.push_back(indexTmp);
 		    counter ++;
 		}
-		else if (x > xR){
+		else if (x >= xR){
 		    if (slope1 > slope2) iNeg.erase(iNeg.begin()+i);
 		    else iNeg.erase(iNeg.begin()+index);
 		    i = i+1;
@@ -138,14 +138,14 @@ void pruneAndSearch(vector<Line> constraints) {
                 double tmp2 = (c1 * a2) - (c2 * a1);
                 double y = tmp2 / tmp1;
                 double x = (c1 - (b1 * y)) / (double)a1;
-	        if (x <= xR && x >= xL) {
+	        if (x < xR && x > xL) {
 		    vector<double> tmp{1, (double) counter, x};
 		    rx.push_back(tmp);
 		    vector<int> indexTmp{i, index};
 		    rxPos.push_back(indexTmp);
 		    counter++;
 		}
-		else if (x > xR){
+		else if (x >= xR){
 		    if (slope1 < slope2) iPos.erase(iPos.begin()+i);
 		    else iPos.erase(iPos.begin()+index);
 		    i = i+1;
@@ -160,26 +160,37 @@ void pruneAndSearch(vector<Line> constraints) {
 		i = i+2;
 	    }
 	}
-
-        // find the mediam in rx
+	if (iPos.size() + iNeg.size() < 3) break;
+    // find the mediam in rx
+    sort(rx.begin(), rx.end(), mySort);
 	if (rx.size() <= 2) {
+	    //xm = (rx.at(0).at(2) + rx.at(rx.size()-1).at(2)) / 2;
 	    xm = (xL + xR) / 2;
 	}
-        else {
-	    sort(rx.begin(), rx.end(), mySort);
+    else {
+	    //sort(rx.begin(), rx.end(), mySort);
 	    int m = rx.size() / 2;
 	    xm = rx.at(m).at(2);
-	    
 	}
+	
+
 	// find smin, smax, tmin, tmax, ax, ay, bx, by
-	double smin = 500, smax = -500, tmin = 500, tmax = -500, ax = xm, ay = -1 * std::numeric_limits<double>::infinity(), bx = xm, by = std::numeric_limits<double>::infinity();
+	double smin, smax, tmin, tmax, ax = xm, ay = -1 * std::numeric_limits<double>::infinity(), bx = xm, by = std::numeric_limits<double>::infinity();
 	for (int i = 0; i < iNeg.size(); i++) { // I- part
 	    double tmp = (-1 * iNeg.at(i).a * xm + iNeg.at(i).c) / (double) iNeg.at(i).b;
-	    if (tmp > ay) ay = tmp;
+	    if (tmp > ay) {
+	    	ay = tmp;
+	    	smin = iNeg.at(i).slope;
+	    	smax = iNeg.at(i).slope;
+	    }
 	}
 	for (int i = 0; i < iPos.size(); i++) { // I+ part
             double tmp = (-1 * iPos.at(i).a * xm + iPos.at(i).c) / (double) iPos.at(i).b;
-	    if (tmp < by) by = tmp;
+	    if (tmp < by) {
+	    	by = tmp;
+	    	tmin = iPos.at(i).slope;
+	    	tmax = iPos.at(i).slope;
+	    }
 	}
 	for (int i = 0; i < iNeg.size(); i++) {
 	    if (iNeg.at(i).a * ax + iNeg.at(i).b * ay == (double) iNeg.at(i).c) {
@@ -199,7 +210,7 @@ void pruneAndSearch(vector<Line> constraints) {
 	    xL = xm;
             // prune redundant constraints
 	    for (int i = 0; i < rx.size(); i++) {
-		if (rx.at(i).at(2) < xm) {
+		if (rx.at(i).at(2) <= xm) {
 	            if (rx.at(i).at(0) < 0) {  // iNeg
 			vector<int> tmp = rxNeg.at(rx.at(i).at(1)); // out of range ?
 			if (iNeg.at(tmp.at(0)).slope < iNeg.at(tmp.at(1)).slope) {  // remove tmp.at(0) from iNeg
@@ -242,7 +253,7 @@ void pruneAndSearch(vector<Line> constraints) {
 	    xR = xm;
 	    // prune redundant constraints
 	    for (int i = 0; i < rx.size(); i++) {
-		if (rx.at(i).at(2) > xm) {
+		if (rx.at(i).at(2) >= xm) {
 		    if (rx.at(i).at(0) < 0) {  // iNeg
 			vector<int> tmp = rxNeg.at(rx.at(i).at(1));
 			if (iNeg.at(tmp.at(0)).slope > iNeg.at(tmp.at(1)).slope) {  // remove tmp.at(0) from iNeg
