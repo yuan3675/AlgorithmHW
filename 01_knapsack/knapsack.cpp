@@ -7,11 +7,15 @@
 
 using namespace std;
 
-vector<int> itemPrice;
-vector<int> itemWeight;
-stack<int> upperBound;
+vector<vector<float>> items;
+stack<int> currentPrice;
 stack<bool> tree;
 int itemNum, capacity, lowerBound;
+float upperBound;
+
+bool mySort(vector v1, vector v2) {
+    return v1.at(2) < v2.at(2);
+}
 
 int countUpperBound() {
     int restCap = capacity;
@@ -25,23 +29,30 @@ int countUpperBound() {
 }
 
 void findOptimalPrice() {
+
 }
 
 int main() {
     scanf("%d", capacity);
     scanf("%d", itemNum);
-    itemPrice.assign(itemNum, 0);
-    itemWeight.assign(itemNum, 0);
-    upperBound.assign(itemNum, 0);
+    vector<float> item(3, 0);
+    items.assign(item, itemNum);
 
     for (int i = 0; i < itemNum; i++) {
         int price, weight;
         scanf("%d", price);
         scanf("%d", weight);
-	itemPrice.at(i) = price;
-	itemWeight.at(i) = weight;
+	    items.at(i).at(0) = price;
+	    items.at(i).at(1) = weight;
+        items.at(i).at(2) = price / weight;
     }
+    sort(items.begin(), items.end(), mySort());
 
-    findOptimalPrice();
+    for(int i = 0; i < itemNum; i++) {
+        printf("%f ", items.at(i).at(0));
+        printf("%f ", items.at(i).at(1));
+        printf("%f\n", items.at(i).at(2));
+    }
+    //findOptimalPrice();
     return 0;
 }
