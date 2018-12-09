@@ -13,18 +13,7 @@ stack<bool> tree;
 int itemNum, capacity, lowerBound;
 float upperBound;
 
-bool mySort(vector v1, vector v2) {
-    return v1.at(2) < v2.at(2);
-}
-
 int countUpperBound() {
-    int restCap = capacity;
-    int upperBound = 0;
-    for (int i = 0; i < tree.size(); i++) {
-        upperBound += itemPrice.at((tree.size()-i-1)) * tree.top();
-        restCap -= itemWeight.at((tree.size()-i-1)) * tree.top();
-    }
-
     // TODO: fill the rest capacity with highest P/W item.
 }
 
@@ -33,20 +22,23 @@ void findOptimalPrice() {
 }
 
 int main() {
-    scanf("%d", capacity);
-    scanf("%d", itemNum);
-    vector<float> item(3, 0);
-    items.assign(item, itemNum);
+    scanf("%d", &capacity);
+    scanf("%d", &itemNum);
+    vector<float> item;
+    item.assign(3, 0.0);
+    items.assign(itemNum, item);
 
     for (int i = 0; i < itemNum; i++) {
-        int price, weight;
-        scanf("%d", price);
-        scanf("%d", weight);
+        float price, weight;
+        scanf("%f", &price);
+        scanf("%f", &weight);
 	    items.at(i).at(0) = price;
 	    items.at(i).at(1) = weight;
         items.at(i).at(2) = price / weight;
     }
-    sort(items.begin(), items.end(), mySort());
+    sort(items.begin(), items.end(), [](const vector<float>& a, const vector<float>& b) {
+		    return a[2] > b[2];
+    });
 
     for(int i = 0; i < itemNum; i++) {
         printf("%f ", items.at(i).at(0));
