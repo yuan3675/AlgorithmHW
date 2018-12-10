@@ -9,28 +9,30 @@ using namespace std;
 
 vector<vector<float>> items;
 stack<float> currentPrice;
+stack<float> upperBound;
 stack<bool> tree;
 int itemNum, capacity, restCap;
-float lowerBound, upperBound;
+float lowerBound;
 
-void countUpperBound() {
-    if (currentPrice.size() > 0) upperBound = currentPrice.top();
-    else upperBound = 0.0;
+float countUpperBound() {
+    float ub = 0.0;
+    if (currentPrice.size() > 0) ub = currentPrice.top();
     // TODO: fill the rest capacity with highest P/W item.
     int tmpCap = restCap;
     for(int i = tree.size(); i < itemNum; i++) {
         if (tmpCap > 0) {
             if (tmpCap >= items.at(i).at(1)) {
-                upperBound += items.at(i).at(0);
+                ub += items.at(i).at(0);
                 tmpCap -= items.at(i).at(1);
             }
             else {
-                upperBound += items.at(i).at(0) * (tmpCap / items.at(i).at(1));
+                ub += items.at(i).at(0) * (tmpCap / items.at(i).at(1));
                 tmpCap = 0;
             }
         }
         else break;
     }
+    return ub;
 }
 
 void findOptimalPrice() {
@@ -48,6 +50,7 @@ void findOptimalPrice() {
                 else currentPrice.push(currentPrice.top());
                 tree.push(0);
             }
+            upperBound.push(countUpperBound());
         }
         else break;
     }
@@ -63,14 +66,15 @@ void findOptimalPrice() {
             if (tree.top() == 1) restCap += items.at(tree.size()-1).at(1);
             tree.pop();
             currentPrice.pop();
+            upperBound.pop();
             direction = 0;
         }
         else {
-            countUpperBound();
-            if (lowerBound >= upperBound) {
+            if (lowerBound >= upperBound.top()) {
                 if (tree.top() == 1) restCap += items.at(tree.size()-1).at(1);
                 tree.pop();
                 currentPrice.pop();
+                upperBound.pop();
                 direction = 0;
             }
             else {
@@ -81,11 +85,13 @@ void findOptimalPrice() {
                     if (currentPrice.size() == 0) currentPrice.push(0);
                     else currentPrice.push(currentPrice.top());
                     restCap += items.at(tree.size()-1).at(1);
+                    upperBound.top() = countUpperBound();
                     direction = 1; 
                 }
                 else if (!node && !direction) {
                     tree.pop();
                     currentPrice.pop();
+                    upperBound.pop();
                     direction = 0;
                 }
                 else {
@@ -100,6 +106,7 @@ void findOptimalPrice() {
                         else currentPrice.push(currentPrice.top());
                         tree.push(0);
                     }
+                    upperBound.push(countUpperBound());
                     direction = 1;
                 }
             }
