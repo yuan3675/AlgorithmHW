@@ -35,7 +35,15 @@ int lookup(vector<int> point) {
     }
 }
 
+bool sameX(vector<vector<int>> points) {
+    for (int i = 0; i < points.size()-1; i++) {
+        if (points.at(i).at(0) != points.at(i+1).at(0)) return false;
+    }
+    return true;
+}
+
 void bruteForce(vector<vector<int>> points) {
+    // If many points have same x axis, may be slow.
     for (int i = 0; i < points.size(); i++) {
         for (int j = i+1; j < points.size(); j++) {
             long dis = getDistance(points.at(i), points.at(j));
@@ -65,7 +73,9 @@ void mergeStrip(vector<vector<int>> L, vector<vector<int>> R) {
     sort(L.begin(), L.end(), compareY);
     sort(R.begin(), R.end(), compareY);
     for (int i = 0; i < L.size(); i++) {
-	for (int j = 0; j < R.size() && abs(L.at(i).at(1) - R.at(j).at(1)) < sqrt(minDis); j++) {
+	for (int j = 0; j < R.size(); j++) {
+            // May be slow
+            if (abs(L.at(i).at(1) - R.at(j).at(1)) > sqrt(minDis)) continue;
 	    long dis = getDistance(L.at(i), R.at(j));
             if (dis < minDis) {
                 minDis = dis;
@@ -90,8 +100,7 @@ void mergeStrip(vector<vector<int>> L, vector<vector<int>> R) {
 }                
 
 void findClosestPairs(vector<vector<int>> points) {
-    // not safe, may have error
-    if (points.size() <= 3) {
+    if (points.size() <= 3 || sameX(points)) {
         bruteForce(points); 
     }
     else {
@@ -99,7 +108,7 @@ void findClosestPairs(vector<vector<int>> points) {
         int middle = points.at(points.size()/2).at(0);
         vector<vector<int>> L, R;
         for (int i = 0; i < points.size(); i++) {
-            if (points.at(i).at(0) <= middle) L.push_back(points.at(i));
+            if (points.at(i).at(0) < middle) L.push_back(points.at(i));
             else R.push_back(points.at(i));
         }
         findClosestPairs(L);
