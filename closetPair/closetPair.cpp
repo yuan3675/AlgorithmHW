@@ -9,7 +9,6 @@
 using namespace std;
 
 long minDis = LONG_MAX;
-vector<vector<int>> lookUp;
 vector<vector<int>> closestPairs;
 
 bool compareX(const vector<int> &a, const vector<int> &b) {
@@ -29,12 +28,6 @@ long getDistance(vector<int> a, vector<int> b) {
     return (long int)(pow((a.at(0) - b.at(0)), 2) + pow((a.at(1) - b.at(1)), 2));
 }
 
-int lookup(vector<int> point) {
-    for (int i = 0; i < lookUp.size(); i++) {
-        if (lookUp.at(i).at(0) == point.at(0) && lookUp.at(i).at(1) == point.at(1)) return i+1;
-    }
-}
-
 bool sameX(vector<vector<int>> points) {
     for (int i = 0; i < points.size()-1; i++) {
         if (points.at(i).at(0) != points.at(i+1).at(0)) return false;
@@ -50,16 +43,16 @@ void bruteForce(vector<vector<int>> points) {
             if (dis < minDis) {
                 minDis = dis;
                 closestPairs.clear();
-		int a = lookup(points.at(i));
-		int b = lookup(points.at(j));
+		int a = points.at(i).at(2);
+		int b = points.at(j).at(2);
                 vector<int> closestPair;
 		if (a < b) closestPair = {a, b};
 		else closestPair = {b, a};
                 closestPairs.push_back(closestPair);
             }
             else if (dis == minDis) {
-		int a = lookup(points.at(i));
-		int b = lookup(points.at(j));
+		int a = points.at(i).at(2);
+		int b = points.at(j).at(2);
                 vector<int> closestPair;
 		if (a < b) closestPair = {a, b};
 		else closestPair = {b, a};
@@ -80,16 +73,16 @@ void mergeStrip(vector<vector<int>> L, vector<vector<int>> R) {
             if (dis < minDis) {
                 minDis = dis;
                 closestPairs.clear();
-		int a = lookup(L.at(i));
-		int b = lookup(R.at(j));
+		int a = L.at(i).at(2);
+		int b = R.at(j).at(2);
                 vector<int> closestPair;
 		if (a < b) closestPair = {a, b};
 		else closestPair = {b, a};
                 closestPairs.push_back(closestPair);
             }
             else if (dis == minDis) {
-		int a = lookup(L.at(i));
-		int b = lookup(R.at(j));
+		int a = L.at(i).at(2);
+		int b = R.at(j).at(2);
                 vector<int> closestPair;
 		if (a < b) closestPair = {a, b};
 		else closestPair = {b, a};
@@ -128,10 +121,9 @@ void findClosestPairs(vector<vector<int>> points) {
 int main() {
     int pointNum;
     scanf("%d", &pointNum);
-    vector<int> tmp(2, 0);
+    vector<int> tmp(3, 0);
     vector<vector<int>> points;
     points.assign(pointNum, tmp);
-    lookUp.assign(pointNum, tmp);
     
     for (int i = 0; i < pointNum; i++) {
         int x, y;
@@ -139,8 +131,7 @@ int main() {
         scanf("%d", &y);
         points.at(i).at(0) = x;
         points.at(i).at(1) = y;
-        lookUp.at(i).at(0) = x;
-        lookUp.at(i).at(1) = y;
+	points.at(i).at(2) = i+1;
     }
     findClosestPairs(points);
     sort(closestPairs.begin(), closestPairs.end(), compareXY);
