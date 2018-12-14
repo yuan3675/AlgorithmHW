@@ -24,18 +24,18 @@ bool compareXY(const vector<int> &a, const vector<int> &b) {
     else return a[1] < b[1];
 }
 
-long getDistance(vector<int> a, vector<int> b) {
+long getDistance(vector<int> &a, vector<int> &b) {
     return (long int)(pow((a.at(0) - b.at(0)), 2) + pow((a.at(1) - b.at(1)), 2));
 }
 
-bool sameX(vector<vector<int>> points) {
+bool sameX(vector<vector<int>> &points) {
     for (int i = 0; i < points.size()-1; i++) {
         if (points.at(i).at(0) != points.at(i+1).at(0)) return false;
     }
     return true;
 }
 
-void bruteForce(vector<vector<int>> points) {
+void bruteForce(vector<vector<int>> &points) {
     // If many points have same x axis, may be slow.
     for (int i = 0; i < points.size(); i++) {
         for (int j = i+1; j < points.size(); j++) {
@@ -62,7 +62,7 @@ void bruteForce(vector<vector<int>> points) {
     }
 }
 
-void mergeStrip(vector<vector<int>> L, vector<vector<int>> R) {
+void mergeStrip(vector<vector<int>> &L, vector<vector<int>> &R) {
     sort(L.begin(), L.end(), compareY);
     sort(R.begin(), R.end(), compareY);
     for (int i = 0; i < L.size(); i++) {
@@ -92,7 +92,7 @@ void mergeStrip(vector<vector<int>> L, vector<vector<int>> R) {
     }           		
 }                
 
-void findClosestPairs(vector<vector<int>> points) {
+void findClosestPairs(vector<vector<int>> &points) {
     if (points.size() <= 3 || sameX(points)) {
         bruteForce(points); 
     }
