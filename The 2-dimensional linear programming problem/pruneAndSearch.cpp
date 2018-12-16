@@ -35,7 +35,7 @@ void pruneAndSearch(vector<Line> constraints) {
 	else iZero.push_back(constraints.at(i));
     }
 
-    while(iPos.size() + iNeg.size() >= 3) {
+    while(iPos.size() + iNeg.size() > 2) {
 	vector<vector<double>> rx;
 	vector<vector<int>> rxPos, rxNeg;
         double xm;
@@ -407,15 +407,20 @@ void pruneAndSearch(vector<Line> constraints) {
 	    }
 	    // parallel
 	    else {
-		if (iNeg.at(0).slope >= 0) {
+		if (iNeg.at(0).slope > 0) {
 		    double ans1 = (-1 * iNeg.at(0).a * xL + iNeg.at(0).c) / (double) iNeg.at(0).b;
 		    double ans2 = (-1 * iNeg.at(1).a * xL + iNeg.at(1).c) / (double) iNeg.at(1).b;
 		    double ans;
 		    if (ans1 > ans2) ans = ans2;
 		    else ans = ans1;
-		    if (xL == INT_MIN) cout << "-INF" <<endl;
+		    if (xL == INT_MIN) {
+			cout << "-INF" <<endl;
+		    }
 		    else if (ans > 0) cout << (int) (ans + 0.5) << endl;
 		    else cout << (int) (ans - 0.5) << endl;
+		}
+		else if (iNeg.at(0).slope == 0) {
+		    cout << max(iNeg.at(0).c / iNeg.at(0).b, iNeg.at(1).c / iNeg.at(1).b) << endl;
 		}
 		else {
 		    double ans1 = (-1 * iNeg.at(0).a * xR + iNeg.at(0).c) / (double) iNeg.at(0).b;
@@ -433,7 +438,7 @@ void pruneAndSearch(vector<Line> constraints) {
     else { // one I- and one I+
 	// parallel
 	if (iNeg.at(0).slope == iPos.at(0).slope) {
-	    if (iNeg.at(0).slope >= 0) {
+	    if (iNeg.at(0).slope > 0) {
 		double ans1 = (-1 * iNeg.at(0).a * xL + iNeg.at(0).c) / (double) iNeg.at(0).b;
 		double ans2 = (-1 * iPos.at(0).a * xL + iPos.at(0).c) / (double) iPos.at(0).b;
 		if (ans1 > ans2) cout << "NA" << endl;
@@ -443,6 +448,12 @@ void pruneAndSearch(vector<Line> constraints) {
 		    else cout << (int) (ans1 - 0.5) << endl;
 		}
 	    } 
+	    else if (iNeg.at(0).slope == 0) {
+                double ans1 = iNeg.at(0).c / iNeg.at(0).b;
+	        double ans2 = iPos.at(0).c / iPos.at(0).b;
+	        if (ans1 > ans2) cout << "NA" << endl;
+	        else cout << (int) (ans1 + 0.5) << endl;
+	    }	
 	    else {
 		double ans1 = (-1 * iNeg.at(0).a * xR + iNeg.at(0).c) / (double) iNeg.at(0).b;
 		double ans2 = (-1 * iPos.at(0).a * xR + iPos.at(0).c) / (double) iPos.at(0).b;
