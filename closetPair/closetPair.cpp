@@ -35,8 +35,32 @@ bool sameX(vector<vector<int>> &points) {
     return true;
 }
 
+void same(vector<vector<int>> &points) {
+    sort(points.begin(), points.end(), compareY);
+    for (int i = 0; i < points.size()-1; i++) {
+        long dis = getDistance(points.at(i), points.at(i+1));
+        if (dis < minDis) {
+            minDis = dis;
+            closestPairs.clear();
+            int a = points.at(i).at(2);
+            int b = points.at(i+1).at(2);
+            vector<int> closestPair;
+            if (a < b) closestPair = {a, b};
+            else closestPair = {b, a};
+            closestPairs.push_back(closestPair);
+        }
+        else if (dis == minDis) {
+            int a = points.at(i).at(2);
+            int b = points.at(i+1).at(2);
+            vector<int> closestPair;
+            if (a < b) closestPair = {a, b};
+            else closestPair = {b, a};
+            closestPairs.push_back(closestPair);
+        }
+    }
+}
+
 void bruteForce(vector<vector<int>> &points) {
-    // If many points have same x axis, may be slow.
     for (int i = 0; i < points.size(); i++) {
         for (int j = i+1; j < points.size(); j++) {
             long dis = getDistance(points.at(i), points.at(j));
@@ -66,7 +90,7 @@ void mergeStrip(vector<vector<int>> &L, vector<vector<int>> &R) {
     sort(L.begin(), L.end(), compareY);
     sort(R.begin(), R.end(), compareY);
     for (int i = 0; i < L.size(); i++) {
-	for (int j = 0; j < R.size(); j++) {
+	for (int j = 0; j < R.size() && R.at(j).at(1) <= L.at(i).at(1) + sqrt(minDis); j++) {
             // May be slow
             if (abs(L.at(i).at(1) - R.at(j).at(1)) > sqrt(minDis)) continue;
 	    long dis = getDistance(L.at(i), R.at(j));
@@ -93,9 +117,10 @@ void mergeStrip(vector<vector<int>> &L, vector<vector<int>> &R) {
 }                
 
 void findClosestPairs(vector<vector<int>> &points) {
-    if (points.size() <= 3 || sameX(points)) {
-        bruteForce(points); 
+    if (sameX(points)) {
+        same(points); 
     }
+    else if (points.size() <= 3) bruteForce(points);
     else {
         sort(points.begin(), points.end(), compareX);
         int middle = points.at(points.size()/2).at(0);

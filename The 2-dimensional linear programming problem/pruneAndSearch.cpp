@@ -6,7 +6,6 @@
 using namespace std;
 
 class Line {
-
     public:
 	int a, b, c;
 	double slope;
@@ -25,7 +24,7 @@ bool mySort(vector<double> i, vector<double> j) {
     return (i.at(2) < j.at(2));
 }
 
-void pruneAndSearch(vector<Line> constraints) {
+void pruneAndSearch(vector<Line> &constraints) {
     double xL = INT_MIN, xR = INT_MAX;
     vector<Line> iPos, iNeg, iZero;
     // classify I0, I+, I-
@@ -51,6 +50,10 @@ void pruneAndSearch(vector<Line> constraints) {
 		}
 	    }
 	    iZero.clear();
+            if (xL > xR) {
+                cout << "NA" <<endl;
+                return;
+            }
 	}	    
 	// determine the x-coordinates of their intersections
 	if (iNeg.size() >= 2) {
@@ -408,29 +411,33 @@ void pruneAndSearch(vector<Line> constraints) {
 	    // parallel
 	    else {
 		if (iNeg.at(0).slope > 0) {
-		    double ans1 = (-1 * iNeg.at(0).a * xL + iNeg.at(0).c) / (double) iNeg.at(0).b;
-		    double ans2 = (-1 * iNeg.at(1).a * xL + iNeg.at(1).c) / (double) iNeg.at(1).b;
-		    double ans;
-		    if (ans1 > ans2) ans = ans2;
-		    else ans = ans1;
-		    if (xL == INT_MIN) {
-			cout << "-INF" <<endl;
-		    }
-		    else if (ans > 0) cout << (int) (ans + 0.5) << endl;
-		    else cout << (int) (ans - 0.5) << endl;
+		    if (xL == INT_MIN) cout << "-INF" << endl;
+                    else {
+		        double ans1 = (-1 * iNeg.at(0).a * xL + iNeg.at(0).c) / (double) iNeg.at(0).b;
+		        double ans2 = (-1 * iNeg.at(1).a * xL + iNeg.at(1).c) / (double) iNeg.at(1).b;
+		        double ans;
+		        if (ans1 > ans2) ans = ans2;
+		        else ans = ans1;
+		        if (ans > 0) cout << (int) (ans + 0.5) << endl;
+		        else cout << (int) (ans - 0.5) << endl;
+                    }
 		}
 		else if (iNeg.at(0).slope == 0) {
-		    cout << max(iNeg.at(0).c / iNeg.at(0).b, iNeg.at(1).c / iNeg.at(1).b) << endl;
+		    double ans = max(iNeg.at(0).c / iNeg.at(0).b, iNeg.at(1).c / iNeg.at(1).b);
+		    if (ans > 0) cout << (int) (ans + 0.5) << endl;
+		    else cout << (int) ans - 0.5 << endl;
 		}
 		else {
-		    double ans1 = (-1 * iNeg.at(0).a * xR + iNeg.at(0).c) / (double) iNeg.at(0).b;
-		    double ans2 = (-1 * iNeg.at(1).a * xR + iNeg.at(1).c) / (double) iNeg.at(1).b;
-		    double ans;
-		    if (ans1 > ans2) ans = ans2;
-		    else ans = ans1;
-		    if (xR == INT_MAX) cout << "-INF" <<endl;
-		    else if (ans > 0) cout << (int) (ans + 0.5) << endl;
-		    else cout << (int) (ans - 0.5) << endl;
+		    if (xR == INT_MAX) cout << "-INF" << endl;
+                    else {
+		        double ans1 = (-1 * iNeg.at(0).a * xR + iNeg.at(0).c) / (double) iNeg.at(0).b;
+		        double ans2 = (-1 * iNeg.at(1).a * xR + iNeg.at(1).c) / (double) iNeg.at(1).b;
+		        double ans;
+		        if (ans1 > ans2) ans = ans2;
+		        else ans = ans1;
+		        if (ans > 0) cout << (int) (ans + 0.5) << endl;
+		        else cout << (int) (ans - 0.5) << endl;
+                    }
 		}
 	    }
 	}
@@ -452,7 +459,10 @@ void pruneAndSearch(vector<Line> constraints) {
                 double ans1 = iNeg.at(0).c / iNeg.at(0).b;
 	        double ans2 = iPos.at(0).c / iPos.at(0).b;
 	        if (ans1 > ans2) cout << "NA" << endl;
-	        else cout << (int) (ans1 + 0.5) << endl;
+	        else {
+		    if (ans1 > 0) cout << (int) (ans1 + 0.5) << endl;
+		    else cout << (int) (ans1 - 0.5) << endl;
+                }
 	    }	
 	    else {
 		double ans1 = (-1 * iNeg.at(0).a * xR + iNeg.at(0).c) / (double) iNeg.at(0).b;
@@ -473,7 +483,7 @@ void pruneAndSearch(vector<Line> constraints) {
 	    if (xL <= interX && interX <= xR) {
 		// I- slope > I+ slope
 		if (iNeg.at(0).slope > iPos.at(0).slope) {
-		    if (iNeg.at(0).slope < 0 && iPos.at(0).slope < 0) {
+		    if ((iNeg.at(0).slope < 0 && iPos.at(0).slope < 0) || iNeg.at(0).slope == 0) {
 		        if (interY > 0) cout << (int) (interY + 0.5) << endl;
 		        else cout << (int) (interY - 0.5) << endl;
 		    }
@@ -486,7 +496,7 @@ void pruneAndSearch(vector<Line> constraints) {
 		}
 		// I- slope < I+ slope
 		else {
-		    if (iNeg.at(0).slope > 0 && iPos.at(0).slope > 0) {
+		    if ((iNeg.at(0).slope > 0 && iPos.at(0).slope > 0) || iNeg.at(0).slope == 0) {
 		        if (interY > 0) cout << (int) (interY + 0.5) << endl;
 		        else cout << (int) (interY - 0.5) << endl;
 		    }
@@ -511,7 +521,13 @@ void pruneAndSearch(vector<Line> constraints) {
 			else if (ans > 0) cout << (int) (ans + 0.5) << endl;
 		        else cout << (int) (ans - 0.5) << endl;
 		    }
-		    // I- slope >= 0
+                    // I- slope = 0
+                    else if (iNeg.at(0).slope == 0) {
+                        double ans = iNeg.at(0).c / (double) iNeg.at(0).b;
+			if (ans > 0) cout << (int) (ans + 0.5) << endl;
+		        else cout << (int) (ans - 0.5) << endl;
+                    }
+		    // I- slope > 0
 		    else {
 		        double ans = (-1 * iNeg.at(0).a * xL - iNeg.at(0).c) / (double) iNeg.at(0).b;
 			if (xL == INT_MIN) cout << "-INF" << endl;
@@ -533,7 +549,13 @@ void pruneAndSearch(vector<Line> constraints) {
 			else if (ans > 0) cout << (int) (ans + 0.5) << endl;
 		        else cout << (int) (ans - 0.5) << endl;
 		    }
-		    // I- slope >= 0
+                    // I- slope = 0
+                    else if (iNeg.at(0).slope == 0) {
+                        double ans = iNeg.at(0).c / (double) iNeg.at(0).b;
+			if (ans > 0) cout << (int) (ans + 0.5) << endl;
+		        else cout << (int) (ans - 0.5) << endl;
+                    }
+		    // I- slope > 0
 		    else {
 		        double ans = (-1 * iNeg.at(0).a * xL - iNeg.at(0).c) / (double) iNeg.at(0).b;
 			if (xL == INT_MIN) cout << "-INF" << endl;

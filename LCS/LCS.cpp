@@ -9,14 +9,11 @@ using namespace std;
 
 char input1[100];
 char input2[100];
-vector<char> vec1;
-vector<char> vec2;
-vector<vector<int>> table;
 vector<string> result;
 int LCS_length;
 
 // find out all LCS
-void listAllLCS(int m, int n, int curLen, vector<char> tmp) {
+void listAllLCS(int m, int n, int curLen, vector<char> &tmp, vector<char> &vec1, vector<char> &vec2, vector<vector<int>> &table) {
     if (curLen == LCS_length) {
 	   string s(tmp.begin(), tmp.end());
 	   result.push_back(s);
@@ -29,14 +26,14 @@ void listAllLCS(int m, int n, int curLen, vector<char> tmp) {
 	    for (int j = n; j < vec1.size(); j++) {
 		    if (vec1.at(j) == vec2.at(i) && table.at(i+1).at(j+1) == curLen + 1) {
 			    tmp.at(curLen) = vec1.at(j);
-			    listAllLCS(i+1, j+1, curLen + 1, tmp);
+			    listAllLCS(i+1, j+1, curLen + 1, tmp, vec1, vec2, table);
 		    }
 	    }
     }
 }
 
 // Construct table, find LCS length
-void LCS() {
+void LCS(vector<char> &vec1, vector<char> &vec2, vector<vector<int>> &table) {
     vector<int> row;
     row.assign(vec1.size() + 1, 0);
     table.assign(vec2.size() + 1, row);
@@ -57,7 +54,7 @@ void LCS() {
     LCS_length = table.at(vec2.size()).at(vec1.size());
     printf("%d ", LCS_length);
     vector<char> tmp(LCS_length, 'a');
-    listAllLCS(0, 0, 0, tmp);
+    listAllLCS(0, 0, 0, tmp, vec1, vec2, table);
 }
     
 
@@ -66,9 +63,12 @@ int main() {
     scanf("%s", input1);
     scanf("%s", input2);
    
+    vector<char> vec1;
+    vector<char> vec2;
+    vector<vector<int>> table;
     vec1.assign(input1, input1 + strlen(input1)); 
     vec2.assign(input2, input2 + strlen(input2)); 
-    LCS();
+    LCS(vec1, vec2, table);
     printf("%lu\n", result.size());
     /*    
     // sort in dictionary order
