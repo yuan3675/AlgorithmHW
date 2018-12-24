@@ -22,6 +22,9 @@ void listAllLCS(int m, int n, int curLen, vector<char> &tmp, vector<char> &vec1,
     
     if (m == vec2.size() || n == vec1.size()) return;
 
+    int rest = LCS_length - curLen;
+    if (rest > vec1.size() - n || rest > vec2.size() - m) return;
+
     for (int i = m; i < vec2.size(); i++) {
 	    for (int j = n; j < vec1.size(); j++) {
 		    if (vec1.at(j) == vec2.at(i) && table.at(i+1).at(j+1) == curLen + 1) {
@@ -70,18 +73,6 @@ int main() {
     vec2.assign(input2, input2 + strlen(input2)); 
     LCS(vec1, vec2, table);
     printf("%lu\n", result.size());
-    /*    
-    // sort in dictionary order
-    for(int i = 0; i < result.size() - 1; i++) {
-	    for (int j = i+1; j < result.size(); j++) {
-		    if (result.at(i) > result.at(j)) {
-			    string tmp = result.at(i);
-			    result.at(i) = result.at(j);
-			    result.at(j) = tmp;
-		    }
-	    }
-    }
-    */
     
     sort(result.begin(), result.end());
     // print out all LCS
