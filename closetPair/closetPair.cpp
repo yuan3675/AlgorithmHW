@@ -28,16 +28,17 @@ long getDistance(vector<int> &a, vector<int> &b) {
     return (long int)(pow((a.at(0) - b.at(0)), 2) + pow((a.at(1) - b.at(1)), 2));
 }
 
-bool sameX(vector<vector<int>> &points) {
-    for (int i = 0; i < points.size()-1; i++) {
+bool sameX(vector<vector<int>> &points, int begin, int len) {
+    for (int i = begin; i < begin + len - 1; ++i) {
+	// Compare the x coordinate with their neighbor, if not the same, return false.
         if (points.at(i).at(0) != points.at(i+1).at(0)) return false;
     }
     return true;
 }
 
-void same(vector<vector<int>> &points) {
-    sort(points.begin(), points.end(), compareY);
-    for (int i = 0; i < points.size()-1; i++) {
+void same(vector<vector<int>> &points, int begin, int len) {
+    sort(points.begin() + begin, points.begin() + begin + len, compareY);
+    for (int i = begin; i < begin + len - 1; i++) {
         long dis = getDistance(points.at(i), points.at(i+1));
         if (dis < minDis) {
             minDis = dis;
@@ -60,10 +61,12 @@ void same(vector<vector<int>> &points) {
     }
 }
 
-void bruteForce(vector<vector<int>> &points) {
-    for (int i = 0; i < points.size(); i++) {
-        for (int j = i+1; j < points.size(); j++) {
+void bruteForce(vector<vector<int>> &points, int begin, int len) {
+    // Compute distance in the order of (0,1), (0,2), (1,2)
+    for (int i = begin; i < begin + len; i++) {
+        for (int j = i+1; j < begin + len; j++) {
             long dis = getDistance(points.at(i), points.at(j));
+	    // If the distance is smaller than the min distance, update min distance, flush the closestPair vector and put new pair into closestPair vector. 
             if (dis < minDis) {
                 minDis = dis;
                 closestPairs.clear();
@@ -74,6 +77,7 @@ void bruteForce(vector<vector<int>> &points) {
 		else closestPair = {b, a};
                 closestPairs.push_back(closestPair);
             }
+	    // The distance is the same as min distance, put new pair into closestPair vector
             else if (dis == minDis) {
 		int a = points.at(i).at(2);
 		int b = points.at(j).at(2);
@@ -82,6 +86,7 @@ void bruteForce(vector<vector<int>> &points) {
 		else closestPair = {b, a};
                 closestPairs.push_back(closestPair);
             }
+	    // The distance is greater than min distance, do nothing.
         }
     }
 }
@@ -116,36 +121,36 @@ void mergeStrip(vector<vector<int>> &L, vector<vector<int>> &R) {
     }           		
 }                
 
-void findClosestPairs(vector<vector<int>> &points) {
-    if (sameX(points)) {
-        same(points); 
+void findClosestPairs(vector<vector<int>> &points, int begin, int len) {
+    // If the rest of points are all having the same x coordinate, find the answer directly.
+    if (sameX(points, begin, len)) {
+        same(points, begin, len); 
     }
-    else if (points.size() <= 3) bruteForce(points);
+    
+    // If the number of points are less than 3, brute force.
+    else if (len <= 3) bruteForce(points, begin, len);
     else {
-        sort(points.begin(), points.end(), compareX);
-        int middle = points.at(points.size()/2).at(0);
-        vector<vector<int>> L, R;
-        for (int i = 0; i < points.size(); i++) {
-            if (points.at(i).at(0) < middle) L.push_back(points.at(i));
-            else R.push_back(points.at(i));
-        }
-        findClosestPairs(L);
-        findClosestPairs(R);
+        findClosestPairs(points, begin, len/2);
+	// If the len is odd, right part will have more points.
+        findClosestPairs(points, begin + (len/2), len - len/2);
         // TODO: merge
-        vector<vector<int>> stripL, stripR;
-        for (int i = 0; i < L.size(); i++) {
-            if (middle - (long int)L.at(i).at(0) <= sqrt(minDis)) stripL.push_back(L.at(i));
+	int middle = points.at(begin + (len/2)).at(0);
+	vector<vector<int>> stripL, stripR;
+        for (int i = begin; i < begin + (len/2); i++) {
+            if (middle - (long int)points.at(i).at(0) <= sqrt(minDis)) stripL.push_back(points.at(i));
         }
-        for (int i = 0; i < R.size(); i++) {
-            if ((long int)R.at(i).at(0) - middle <= sqrt(minDis)) stripR.push_back(R.at(i));
+        for (int i = begin + (len/2); i < begin + len; i++) {
+            if ((long int)points.at(i).at(0) - middle <= sqrt(minDis)) stripR.push_back(points.at(i));
         }
 	mergeStrip(stripL, stripR);
     } 
 }
 
 int main() {
+    // record the number of points
     int pointNum;
     scanf("%d", &pointNum);
+    // Initialize a vector which size is (the number of points) * 3
     vector<int> tmp(3, 0);
     vector<vector<int>> points;
     points.assign(pointNum, tmp);
@@ -154,11 +159,14 @@ int main() {
         int x, y;
         scanf("%d", &x);
         scanf("%d", &y);
+	// record the coordinate and the input order of each point
         points.at(i).at(0) = x;
         points.at(i).at(1) = y;
 	points.at(i).at(2) = i+1;
     }
-    findClosestPairs(points);
+    // sort the points in x coordinate
+    sort(points.begin(), points.end(), compareX);
+    findClosestPairs(points, 0, pointNum);
     sort(closestPairs.begin(), closestPairs.end(), compareXY);
 
     printf("%ld %d\n", minDis, closestPairs.size());
