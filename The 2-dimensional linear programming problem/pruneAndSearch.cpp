@@ -377,7 +377,7 @@ void pruneAndSearch(vector<Line> &constraints) {
 		        }
 		    }
 		    else {
-		        if (interY > 0) cout << (int) interY + 0.5 << endl;
+		        if (interY > 0) cout << (int) (interY + 0.5) << endl;
 		        else cout << (int) (interY - 0.5) << endl;
 		    }
 		}
