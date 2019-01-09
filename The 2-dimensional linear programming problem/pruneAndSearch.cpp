@@ -33,33 +33,34 @@ void pruneAndSearch(vector<Line> &constraints) {
 	else if (constraints.at(i).b < 0) iNeg.push_back(constraints.at(i));
 	else iZero.push_back(constraints.at(i));
     }
+    
+    // find the constraint of x-axis
+    if (iZero.size() != 0) {
+	for (int i = 0; i < iZero.size(); i++) {
+            double tmp = iZero.at(i).c / (double) iZero.at(i).a;
+	    if (iZero.at(i).a < 0) {  // x >= k
+                if (tmp > xL) xL = tmp;
+	    }
+            else if (iZero.at(i).a > 0) { // x <= k
+                if (tmp < xR) xR = tmp;
+	    }
+	}
+	iZero.clear();
+        if (xL > xR) {  // no available region
+            cout << "NA" <<endl;
+            return;
+        }
+    }
+    if (iNeg.size() == 0) {
+	cout << "-INF" << endl;
+        return;
+    }	    
 
     while(iPos.size() + iNeg.size() > 2) {
 	vector<vector<double>> rx;
 	vector<vector<int>> rxPos, rxNeg;
         double xm;
         
-	// find the constraint of x-axis
-        if (iZero.size() != 0) {
-	    for (int i = 0; i < iZero.size(); i++) {
-		double tmp = iZero.at(i).c / (double) iZero.at(i).a;
-	        if (iZero.at(i).a < 0) {  // x >= k
-                    if (tmp > xL) xL = tmp;
-		}
-                else if (iZero.at(i).a > 0) { // x <= k
-                    if (tmp < xR) xR = tmp;
-		}
-	    }
-	    iZero.clear();
-            if (xL > xR) {  // no available region
-                cout << "NA" <<endl;
-                return;
-            }
-	}
-        if (iNeg.size() == 0) {
-	    cout << "-INF" << endl;
-            return;
-        }	    
 
 	// determine the x-coordinates of their intersections
 	if (iNeg.size() >= 2) {
@@ -212,10 +213,17 @@ void pruneAndSearch(vector<Line> &constraints) {
 	        if (tmax < iPos.at(i).slope) tmax = iPos.at(i).slope;
 	    }
 	}
-
+	/*
+	// ----------------------- debug ----------------------------
+	cout << "ay: " << ay << ", by: " << by << endl;
+	cout << "smin: " << smin << ", smax: " << smax << endl;
+	cout << "tmin: " << tmin << ", tmax: " << tmax << endl;
+	// ----------------------- debug ----------------------------
+*/
 	// case1 & case4
 	if ((ay <= by && smax < 0) || (ay > by && smax < tmin)) {
 	    xL = xm;
+	    /*
             // prune redundant constraints
 	    vector<int> delP, delN;
 	    for (int i = 0; i < rx.size(); i++) {
@@ -252,11 +260,12 @@ void pruneAndSearch(vector<Line> &constraints) {
 	    for (int i = 0; i < delP.size(); i++) {
 		iPos.at(delP.at(i)) = iPos.back();
 		iPos.pop_back();
-	    }
+	    }*/
 	}
 	// case2 & case5
 	else if ((ay <= by && smin > 0) || (ay > by && smin > tmax)) {
 	    xR = xm;
+	    /*
 	    // prune redundant constraints
 	    vector<int> delP, delN;
 	    for (int i = 0; i < rx.size(); i++) {
@@ -292,7 +301,7 @@ void pruneAndSearch(vector<Line> &constraints) {
 	    for (int i = 0; i < delP.size(); i++) {
 		iPos.at(delP.at(i)) = iPos.back();
 		iPos.pop_back();
-	    }
+	    }*/
 	}
 	// case3
 	else if (ay <= by && smin <= 0 && smax >= 0) {
@@ -374,6 +383,7 @@ void pruneAndSearch(vector<Line> &constraints) {
 		        }
 		    }
 		    else if (iNeg.at(0).slope >= 0 && iNeg.at(1).slope >= 0) {
+			cout << "xL: " << xL << endl;
 			if (xL == INT_MIN) cout << "-INF" <<endl;
 			else if(iNeg.at(0).slope < iNeg.at(1).slope) {
 		            double ans = (-1 * iNeg.at(0).a * xL + iNeg.at(0).c) / (double) iNeg.at(0).b;
