@@ -38,23 +38,29 @@ void pruneAndSearch(vector<Line> &constraints) {
 	vector<vector<double>> rx;
 	vector<vector<int>> rxPos, rxNeg;
         double xm;
-
+        
+	// find the constraint of x-axis
         if (iZero.size() != 0) {
 	    for (int i = 0; i < iZero.size(); i++) {
 		double tmp = iZero.at(i).c / (double) iZero.at(i).a;
-	        if (iZero.at(i).a < 0) {
+	        if (iZero.at(i).a < 0) {  // x >= k
                     if (tmp > xL) xL = tmp;
 		}
-                else if (iZero.at(i).a > 0) {
+                else if (iZero.at(i).a > 0) { // x <= k
                     if (tmp < xR) xR = tmp;
 		}
 	    }
 	    iZero.clear();
-            if (xL > xR) {
+            if (xL > xR) {  // no available region
                 cout << "NA" <<endl;
                 return;
             }
-	}	    
+	}
+        if (iNeg.size() == 0) {
+	    cout << "-INF" << endl;
+            return;
+        }	    
+
 	// determine the x-coordinates of their intersections
 	if (iNeg.size() >= 2) {
 	    int counter = 0;  // record which slot in rxNeg store this intersection
@@ -88,8 +94,10 @@ void pruneAndSearch(vector<Line> &constraints) {
                 double y = tmp2 / tmp1;
                 double x = (c1 - (b1 * y)) / (double)a1;
 	        if (x < xR && x > xL) {
+		    // {I-, the index of rxNeg, x position}
 		    vector<double> tmp{-1, (double) counter, x};
 		    rx.push_back(tmp);
+		    // {record the index of two intersect lines}
 		    vector<int> indexTmp{i, index};
 		    rxNeg.push_back(indexTmp);
 		    counter ++;
@@ -163,48 +171,45 @@ void pruneAndSearch(vector<Line> &constraints) {
 		i = i+2;
 	    }
 	}
-	if (iPos.size() + iNeg.size() < 3) break;
-    // find the mediam in rx
-    sort(rx.begin(), rx.end(), mySort);
-	if (rx.size() <= 2) {
+	// no intersect point or all intersect points are not between xL and xR
+	if (rx.size() == 0) continue;
+
+	// find the mediam in rx
+        sort(rx.begin(), rx.end(), mySort);
+	/*if (rx.size() <= 2) {
 	    //xm = (rx.at(0).at(2) + rx.at(rx.size()-1).at(2)) / 2;
 	    xm = (xL + xR) / 2;
-	}
-    else {
+	}*/
+        //else {
 	    //sort(rx.begin(), rx.end(), mySort);
 	    int m = rx.size() / 2;
 	    xm = rx.at(m).at(2);
-	}
+	//}
 	
-
 	// find smin, smax, tmin, tmax, ax, ay, bx, by
 	double smin, smax, tmin, tmax, ax = xm, ay = -1 * std::numeric_limits<double>::infinity(), bx = xm, by = std::numeric_limits<double>::infinity();
 	for (int i = 0; i < iNeg.size(); i++) { // I- part
 	    double tmp = (-1 * iNeg.at(i).a * xm + iNeg.at(i).c) / (double) iNeg.at(i).b;
-	    if (tmp > ay) {
+	    if (tmp > ay + 0.00001) {
 	    	ay = tmp;
 	    	smin = iNeg.at(i).slope;
 	    	smax = iNeg.at(i).slope;
 	    }
+	    else if (abs(tmp - ay) < 0.00001) {
+	        if (smin > iNeg.at(i).slope) smin = iNeg.at(i).slope;
+	        if (smax < iNeg.at(i).slope) smax = iNeg.at(i).slope;
+	    }
 	}
 	for (int i = 0; i < iPos.size(); i++) { // I+ part
             double tmp = (-1 * iPos.at(i).a * xm + iPos.at(i).c) / (double) iPos.at(i).b;
-	    if (tmp < by) {
+	    if (tmp < by - 0.00001 ) {
 	    	by = tmp;
 	    	tmin = iPos.at(i).slope;
 	    	tmax = iPos.at(i).slope;
 	    }
-	}
-	for (int i = 0; i < iNeg.size(); i++) {
-	    if (iNeg.at(i).a * ax + iNeg.at(i).b * ay == (double) iNeg.at(i).c) {
-	        if ( iNeg.at(i).slope > smax) smax = iNeg.at(i).slope;
-	        if (iNeg.at(i).slope < smin) smin = iNeg.at(i).slope;
-	    }
-	}
-	for (int i = 0; i < iPos.size(); i++) {
-	    if (iPos.at(i).a * bx + iPos.at(i).b * by == (double) iPos.at(i).c) {
-	        if (iPos.at(i).slope > tmax) tmax = iPos.at(i).slope;
-	        if (iPos.at(i).slope < tmin) tmin = iPos.at(i).slope;
+	    else if (abs(tmp - by) < 0.00001) {
+	        if (tmin > iPos.at(i).slope) tmin = iPos.at(i).slope;
+	        if (tmax < iPos.at(i).slope) tmax = iPos.at(i).slope;
 	    }
 	}
 
@@ -212,86 +217,81 @@ void pruneAndSearch(vector<Line> &constraints) {
 	if ((ay <= by && smax < 0) || (ay > by && smax < tmin)) {
 	    xL = xm;
             // prune redundant constraints
+	    vector<int> delP, delN;
 	    for (int i = 0; i < rx.size(); i++) {
 		if (rx.at(i).at(2) <= xm) {
 	            if (rx.at(i).at(0) < 0) {  // iNeg
-			vector<int> tmp = rxNeg.at(rx.at(i).at(1)); // out of range ?
-			if (iNeg.at(tmp.at(0)).slope < iNeg.at(tmp.at(1)).slope) {  // remove tmp.at(0) from iNeg
-			    iNeg.erase(iNeg.begin() + tmp.at(0));
-			    for (int j = 0; j < rxNeg.size(); j++) {
-			        if (rxNeg.at(j).at(0) > tmp.at(0)) rxNeg.at(j).at(0) -= 1;
-			        if (rxNeg.at(j).at(1) > tmp.at(0)) rxNeg.at(j).at(1) -= 1;
-			    }
+			vector<int> tmp = rxNeg.at(rx.at(i).at(1)); 
+			if (iNeg.at(tmp.at(0)).slope < iNeg.at(tmp.at(1)).slope) {  //  prune the one with smaller slope
+			    delN.push_back(tmp.at(0));
 			}
-		        else {  // remove tmp.at(1) from iNeg
-			    iNeg.erase(iNeg.begin() + tmp.at(1));
-			    for (int j = 0; j < rxNeg.size(); j++) {
-			        if (rxNeg.at(j).at(0) > tmp.at(1)) rxNeg.at(j).at(0) -= 1;
-			        if (rxNeg.at(j).at(1) > tmp.at(1)) rxNeg.at(j).at(1) -= 1;
-			    }
+		        else {  
+			    delN.push_back(tmp.at(1));
 			}
 		    }
 		    else {  // iPos
 			vector<int> tmp = rxPos.at(rx.at(i).at(1));
-			if (iPos.at(tmp.at(0)).slope > iPos.at(tmp.at(1)).slope) {  // remove tmp.at(0) from iPos
-			    iPos.erase(iPos.begin() + tmp.at(0));
-			    for (int j = 0; j < rxPos.size(); j++) {
-			        if (rxPos.at(j).at(0) > tmp.at(0)) rxPos.at(j).at(0) -= 1;
-			        if (rxPos.at(j).at(1) > tmp.at(0)) rxPos.at(j).at(1) -= 1;
-			    }
+			if (iPos.at(tmp.at(0)).slope > iPos.at(tmp.at(1)).slope) {  // prune the one with bigger slope
+			    delP.push_back(tmp.at(0));
 			}
-			else {  // remove tmp.at(1) from iPos
-			    iPos.erase(iPos.begin() + tmp.at(1));
-			    for (int j = 0; j < rxPos.size(); j++) {
-			        if (rxPos.at(j).at(0) > tmp.at(1)) rxPos.at(j).at(0) -= 1;
-			        if (rxPos.at(j).at(1) > tmp.at(1)) rxPos.at(j).at(1) -= 1;
-			    }
+			else {  
+			    delP.push_back(tmp.at(0));
 			}
 		    }
 		}
+	    }
+            sort(delN.begin(), delN.end());
+            reverse(delN.begin(), delN.end());
+            sort(delP.begin(), delP.end());
+            reverse(delP.begin(), delP.end());
+	    for (int i = 0; i < delN.size(); i++) {
+		iNeg.at(delN.at(i)) = iNeg.back();
+		iNeg.pop_back();
+	    }
+	    
+	    for (int i = 0; i < delP.size(); i++) {
+		iPos.at(delP.at(i)) = iPos.back();
+		iPos.pop_back();
 	    }
 	}
 	// case2 & case5
 	else if ((ay <= by && smin > 0) || (ay > by && smin > tmax)) {
 	    xR = xm;
 	    // prune redundant constraints
+	    vector<int> delP, delN;
 	    for (int i = 0; i < rx.size(); i++) {
 		if (rx.at(i).at(2) >= xm) {
 		    if (rx.at(i).at(0) < 0) {  // iNeg
 			vector<int> tmp = rxNeg.at(rx.at(i).at(1));
-			if (iNeg.at(tmp.at(0)).slope > iNeg.at(tmp.at(1)).slope) {  // remove tmp.at(0) from iNeg
-			    iNeg.erase(iNeg.begin() + tmp.at(0));
-			    for (int j = 0; j < rxNeg.size(); j++) {
-			        if (rxNeg.at(j).at(0) > tmp.at(0)) rxNeg.at(j).at(0) -= 1;
-			        if (rxNeg.at(j).at(1) > tmp.at(0)) rxNeg.at(j).at(1) -= 1;
-			    }
+			if (iNeg.at(tmp.at(0)).slope > iNeg.at(tmp.at(1)).slope) {  // prune the one with larger slope
+			    delN.push_back(tmp.at(0));
 			}
-		        else {  // remove tmp.at(1) from iNeg
-			    iNeg.erase(iNeg.begin() + tmp.at(1));
-			    for (int j = 0; j < rxNeg.size(); j++) {
-			        if (rxNeg.at(j).at(0) > tmp.at(1)) rxNeg.at(j).at(0) -= 1;
-			        if (rxNeg.at(j).at(1) > tmp.at(1)) rxNeg.at(j).at(1) -= 1;
-			    }
+		        else {
+			    delN.push_back(tmp.at(1));
 			}
 	            }
 		    else {  // iPos
 			vector<int> tmp = rxPos.at(rx.at(i).at(1));
-			if (iPos.at(tmp.at(0)).slope < iPos.at(tmp.at(1)).slope) {  // remove tmp.at(0) from iPos
-			    iPos.erase(iPos.begin() + tmp.at(0));
-			    for (int j = 0; j < rxPos.size(); j++) {
-			        if (rxPos.at(j).at(0) > tmp.at(0)) rxPos.at(j).at(0) -= 1;
-			        if (rxPos.at(j).at(1) > tmp.at(0)) rxPos.at(j).at(1) -= 1;
-			    }
+			if (iPos.at(tmp.at(0)).slope < iPos.at(tmp.at(1)).slope) {  // prune the one with smaller slope
+			    delP.push_back(tmp.at(0));
 			}
-			else {  // remove tmp.at(1) from iPos
-			    iPos.erase(iPos.begin() + tmp.at(1));
-			    for (int j = 0; j < rxPos.size(); j++) {
-			        if (rxPos.at(j).at(0) > tmp.at(1)) rxPos.at(j).at(0) -= 1;
-			        if (rxPos.at(j).at(1) > tmp.at(1)) rxPos.at(j).at(1) -= 1;
-			    }
+			else {  
+			    delP.push_back(tmp.at(1));
 			}
 		    }
 		}
+	    }
+            sort(delN.begin(), delN.end());
+            reverse(delN.begin(), delN.end());
+            sort(delP.begin(), delP.end());
+            reverse(delP.begin(), delP.end());
+	    for (int i = 0; i < delN.size(); i++) {
+		iNeg.at(delN.at(i)) = iNeg.back();
+		iNeg.pop_back();
+	    }
+	    for (int i = 0; i < delP.size(); i++) {
+		iPos.at(delP.at(i)) = iPos.back();
+		iPos.pop_back();
 	    }
 	}
 	// case3
@@ -318,6 +318,16 @@ void pruneAndSearch(vector<Line> &constraints) {
     }
 
     // constraints < 2, find the answer directly
+    /* 
+    // ------------------------ debug --------------------------
+    for (int i = 0; i < iNeg.size(); i++) { 
+        cout << iNeg.at(i).a << " " << iNeg.at(i).b << " " << iNeg.at(i).c << endl;
+    }
+    for (int i = 0; i < iPos.size(); i++) { 
+        cout << iPos.at(i).a << " " << iPos.at(i).b << " " << iPos.at(i).c << endl;
+    }
+    // ------------------------ debug --------------------------
+    */
     if (iNeg.size() == 0) cout << "-INF" << endl;
     else if (iPos.size() == 0) {
 	if (iNeg.size() == 1) {  // only one I-
